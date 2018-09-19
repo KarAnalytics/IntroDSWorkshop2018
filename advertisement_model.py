@@ -1,14 +1,15 @@
 ## Objective: Fit simple linear regression model using R
 
-adv <- read.csv("Advertising.csv")  ## The dataset used in class
+## We have to import some libraries so that we can load the data
+import matplotlib.pyplot as plt
+import pandas as pd
+import statsmodels.formula.api as sm
 
-## Visualize how Sales is individually related to television, radio and news advertisement
-plot(adv$Sales,adv$TV)  ## Better correlation but possibly non-linear
-plot(adv$Sales,adv$Radio) ## Lesser correlation
-plot(adv$Sales,adv$Newspaper)
+adv = pd.read_csv("https://raw.githubusercontent.com/KarAnalytics/IntroDSWorkshop2018/master/Advertising.csv")
 
-## Fit the model
-model = lm(Sales ~ TV + Newspaper + Radio, data = adv)
+plt.scatter(adv['TV'],adv['Sales'])
+plt.scatter(adv['Radio'],adv['Sales'])
+plt.scatter(adv['Newspaper'],adv['Sales'])
 
-## Summarize the model
-summary(model)
+result = sm.ols(formula="Sales ~ TV + Newspaper + Radio", data=adv).fit()
+print(result.summary())
