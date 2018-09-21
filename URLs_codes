@@ -1,0 +1,95 @@
+Link to summarize what is data science and topics in data science
+https://docs.google.com/presentation/d/1X-7V3erJsh0hVcFSrxkfeVrbfkXSzL2UCZIWMfSu6-A/edit#slide=id.g429539415f_12_5
+
+The Advertising dataset can be accessed here:
+https://raw.githubusercontent.com/KarAnalytics/IntroDSWorkshop2018/master/Advertising.csv
+
+Materials used in the workshop (slides, code, dataset, etc.) can be found here:
+https://github.com/KarAnalytics/IntroDSWorkshop2018
+
+Quiz on topics in data science:  
+    Go to kahoot.it    
+    Enter this pin:
+        4015140
+        
+---------------------------------------------------------------------------------------------------------------------------
+
+Day 2:
+        
+Padlet: https://padlet.com/kartucson/u3n535n5xaq0
+
+To mount the server, you need to open a terminal in the cloudera server and then type the following:
+su 
+Passord: cloudera
+ 
+Now since you have root access, you can mount the shared folder into the cloudera server
+mount -t vboxsf  cloudera_shared /home/cloudera/Downloads/cloudera_shared/
+
+Copy the file from the local in the Cloudera server to HDFS 
+hadoop fs -put /home/cloudera/Downloads/Advertising.csv  /user/hive/warehouse/advertising.db
+
+The rest of the procedures are in the slides (to input data into HIVE database using Hue system).
+Try the same for Impala by entering the impala database using the command imapala-shell in terminal.
+
+ ## Try these R and Python sample scripts:
+     
+import matplotlib.pyplot as plt
+import pandas as pd
+import statsmodels.formula.api as sm
+
+#adv = pd.read_csv("Advertising.csv")  ## The dataset used in class
+adv = pd.read_csv("https://raw.githubusercontent.com/KarAnalytics/IntroDSWorkshop2018/master/Advertising.csv")
+
+plt.scatter(adv['TV'],adv['Sales'])
+plt.scatter(adv['Radio'],adv['Sales'])
+plt.scatter(adv['Newspaper'],adv['Sales'])
+
+result = sm.ols(formula="Sales ~ TV + Newspaper + Radio", data=adv).fit()
+print(result.summary())
+    
+ -------
+ 
+ ## Objective: Fit simple linear regression model using R
+
+adv = read.csv("https://raw.githubusercontent.com/KarAnalytics/IntroDSWorkshop2018/master/Advertising.csv")  ## The dataset 
+
+## Visualize how Sales is individually related to television, radio and news advertisement
+plot(adv$Sales,adv$TV)  ## Better correlation but possibly non-linear
+plot(adv$Sales,adv$Radio) ## Lesser correlation
+plot(adv$Sales,adv$Newspaper)
+
+## Fit the model
+model = lm(Sales ~ TV + Newspaper + Radio, data = adv)
+
+## Summarize the model
+summary(model)    
+     
+ 
+---- Code for Regression with Pyspark (if we reach till there)...
+
+ from pyspark import SparkConf, SparkContext
+from pyspark.sql import SQLContext
+import pandas as pd
+from pyspark.ml.feature import VectorAssembler
+from pyspark.ml.regression import LinearRegression
+
+## sc= SparkContext()
+sqlContext = SQLContext(sc)
+adv = sqlContext.read.format('com.databricks.spark.csv').options(header='true', inferschema='true').load('/FileStore/tables/Advertising.csv')
+adv.take(2) 
+adv.cache()
+adv.printSchema()
+adv.describe().toPandas().transpose()
+
+vectorAssembler = VectorAssembler(inputCols = ['TV', 'Newspaper', 'Radio'], outputCol = 'Inputs')
+v_adv = vectorAssembler.transform(adv)
+vec_adv = v_adv.select(['Inputs', 'Sales'])
+vec_adv.show(3)
+
+lr = LinearRegression(featuresCol = 'Inputs', labelCol='Sales', maxIter=10, regParam=0)
+lr_model = lr.fit(vec_adv)
+print("Coefficients: " + str(lr_model.coefficients))
+print("Intercept: " + str(lr_model.intercept))
+
+Please complete this survey. We value your feedback about the Day-1 of the workshop and ideas for optimizing your experience for Day 2 of the workshop :
+    https://uarizona.co1.qualtrics.com/jfe/form/SV_eJu0JFhtls0kV0h
